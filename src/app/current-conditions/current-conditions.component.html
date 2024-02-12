@@ -14,8 +14,8 @@
       </p>
     </div>
     <div>
-      <span class="close" (click)="locationService.removeLocation(location.zip)">&times;</span>
-      <img [src]="weatherService.getWeatherIcon(location.data.weather[0].id)">
+      <span class="close" (click)="removeLocation(location.zip)">&times;</span>
+      <img [src]="weatherService.getWeatherIcon(location.data.weather[0].id)" [alt]="location.data.weather[0].description">
     </div>
  </div>
 </div>

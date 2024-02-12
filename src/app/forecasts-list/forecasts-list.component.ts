@@ -17,7 +17,9 @@ export class ForecastsListComponent {
     route.params.subscribe(params => {
       this.zipcode = params['zipcode'];
       weatherService.getForecast(this.zipcode)
-        .subscribe(data => this.forecast = data);
+        .subscribe(data => {
+          this.forecast = data;
+        });
     });
   }
 }
