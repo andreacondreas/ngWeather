@@ -1,5 +1,4 @@
-import { Component, EventEmitter, inject, Input, Output, Signal } from '@angular/core';
-import { WeatherService } from "../weather.service";
+import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { Router } from "@angular/router";
 import { ConditionsAndZip } from '../conditions-and-zip.type';
 
@@ -12,7 +11,6 @@ export class CurrentConditionsComponent {
 
   @Output() zipcode = new EventEmitter<string>();
   @Input() conditionsAndZip: ConditionsAndZip[];
-  private weatherService = inject(WeatherService);
   private router = inject(Router);
 
   showForecast(zipcode: string) {
@@ -23,7 +21,7 @@ export class CurrentConditionsComponent {
     this.zipcode.emit(currentZipcode);
   }
 
-  trackByZip(index: number, item: { zip: string }) {
+  trackByZip(index: number, item: { zip: string; }) {
     return item.zip;
   }
 }

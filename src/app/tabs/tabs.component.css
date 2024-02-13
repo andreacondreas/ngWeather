@@ -1,0 +1,12 @@
+.tab-close {
+  color: gray;
+  text-align: right;
+  cursor: pointer;
+  margin-left: 1em;;
+}
+
+.nav-tabs > li {
+  float: left;
+  margin-bottom: -1px;
+  display: flex;
+}

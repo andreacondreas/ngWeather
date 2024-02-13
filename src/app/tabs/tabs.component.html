@@ -1,0 +1,6 @@
+<ul class="nav nav-tabs">
+    <li *ngFor="let tab of tabs; let i = index" (click)="selectTab(tab)" [class.active]="tab.active">
+      <a href="#">{{tab.title}} <span class="tab-close" (click)="closeTab(i)">&times;</span></a>
+    </li>
+</ul>
+<ng-content></ng-content>

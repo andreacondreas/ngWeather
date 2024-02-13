@@ -16,6 +16,8 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { WeatherIconDirective } from './weatherIcon.directive';
 import { OnlyNumbers } from './onlyNumbers.directive';
+import { TabComponent } from './tabs/tab/tab.component';
+import { TabsComponent } from './tabs/tabs.component';
 
 export interface AppConfig {
   URL: string;
@@ -37,7 +39,9 @@ export const AppConfig: AppConfig = {
     CurrentConditionsComponent,
     MainPageComponent,
     WeatherIconDirective,
-    OnlyNumbers
+    OnlyNumbers,
+    TabsComponent,
+    TabComponent
   ],
   imports: [
     BrowserModule,
