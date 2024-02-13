@@ -1,21 +1,17 @@
-import { Component } from '@angular/core';
-import {LocationService} from "../location.service";
-import { WeatherService } from 'app/weather.service';
+import { Component, ElementRef, EventEmitter, Output, ViewChild } from '@angular/core';
 
 @Component({
   selector: 'app-zipcode-entry',
   templateUrl: './zipcode-entry.component.html'
 })
 export class ZipcodeEntryComponent {
+  @Output() zipcode = new EventEmitter<string>();
+  constructor() { }
 
-  constructor(private locationService : LocationService, private weatherService: WeatherService) { }
-
-  addLocation(zipcode : string){
-    let index = this.locationService.locations.indexOf(zipcode);
-    if (index === -1){
-      this.locationService.addLocation(zipcode);
-      this.weatherService.addCurrentConditions(zipcode);
-    }
+  addLocation(entryZipcode: string) {
+    if (!entryZipcode)
+      return;
+    this.zipcode.emit(entryZipcode);
   }
 
 }

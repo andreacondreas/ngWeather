@@ -5,13 +5,12 @@
 
     </div>
     <ul class="list-group">
-      <li *ngFor="let dailyForecast of forecast?.list" class="list-group-item">
+      <li *ngFor="let dailyForecast of forecast?.list; trackBy: trackByDt" class="list-group-item">
         {{ (dailyForecast.dt * 1000) | date:'EEEE, MMM d'}}:
         {{dailyForecast.weather[0].main}}
         - Min: {{dailyForecast.temp.min | number:'.0-0'}}
         - Max: {{dailyForecast.temp.max | number:'.0-0'}}
-
-        <img [src]="weatherService.getWeatherIcon(dailyForecast.weather[0].id)" class="icon">
+        <img weatherIcon [id]="dailyForecast.weather[0].id" [alt]="dailyForecast.weather[0].description" class="icon">
       </li>
     </ul>
   </div>
