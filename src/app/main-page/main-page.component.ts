@@ -1,5 +1,4 @@
 import { Component, Signal, effect } from '@angular/core';
-import { AppConfig } from 'app/app.module';
 import { ConditionsAndZip } from 'app/conditions-and-zip.type';
 import { LOCATIONS } from 'app/constants/locations';
 import { LocationService } from 'app/location.service';
@@ -11,7 +10,7 @@ import { WeatherService } from 'app/weather.service';
 })
 export class MainPageComponent {
   protected currentConditionsByZip: Signal<ConditionsAndZip[]> = this.weatherService.getCurrentConditions();
-  constructor(private weatherService: WeatherService, private locationService: LocationService, private appConfig: AppConfig) {
+  constructor(private weatherService: WeatherService, private locationService: LocationService) {
     let locString = localStorage.getItem(LOCATIONS);
     if (locString)
       this.locationService.locations = JSON.parse(locString);

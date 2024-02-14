@@ -1,8 +1,10 @@
 <div class="well">
-  <h2>Enter a zipcode:</h2>
-  <input type="text" OnlyNumbers #zipcode placeholder="Zipcode" class="form-control" [maxLength]="5">
-  <br>
-  <button class="btn btn-primary" (click)="addLocation(zipcode.value)">
-    Add location
-  </button>
+  <form class="ui form" [formGroup]="form">
+    <h2>Enter a zipcode:</h2>
+    <input type="text" OnlyNumbers #zipcode placeholder="Zipcode" class="form-control" formControlName="zipcode" [maxLength]="5">
+    <br>
+    <button class="btn btn-primary" (click)="addLocation(zipcode.value)" [disabled]="form.invalid">
+      Add location
+    </button>
+  </form>
 </div>

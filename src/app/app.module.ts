@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
 import { ZipcodeEntryComponent } from './zipcode-entry/zipcode-entry.component';
@@ -18,18 +18,6 @@ import { WeatherIconDirective } from './weatherIcon.directive';
 import { OnlyNumbers } from './onlyNumbers.directive';
 import { TabComponent } from './tabs/tab/tab.component';
 import { TabsComponent } from './tabs/tabs.component';
-
-export interface AppConfig {
-  URL: string;
-  APPID: string;
-  ICON_URL: string;
-}
-
-export const AppConfig: AppConfig = {
-  URL: 'http://api.openweathermap.org/data/2.5',
-  APPID: '5a4b2d457ecbef9eb2a71e480b947604',
-  ICON_URL: 'https://raw.githubusercontent.com/udacity/Sunshine-Version-2/sunshine_master/app/src/main/res/drawable-hdpi/',
-};
 
 @NgModule({
   declarations: [
@@ -49,12 +37,14 @@ export const AppConfig: AppConfig = {
     HttpClientModule,
     RouterModule,
     routing,
-    ServiceWorkerModule.register('/ngsw-worker.js', { enabled: environment.production })
+    ServiceWorkerModule.register('/ngsw-worker.js', { enabled: environment.production }),
+    FormsModule,
+    ReactiveFormsModule,
   ],
   providers: [
     LocationService,
     WeatherService,
-    { provide: AppConfig, useValue: AppConfig }],
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
