@@ -10,21 +10,23 @@ import { WeatherService } from 'app/weather.service';
   templateUrl: './main-page.component.html'
 })
 export class MainPageComponent {
-  icons: string[];
   protected currentConditionsByZip: Signal<ConditionsAndZip[]> = this.weatherService.getCurrentConditions();
   constructor(private weatherService: WeatherService, private locationService: LocationService, private appConfig: AppConfig) {
     let locString = localStorage.getItem(LOCATIONS);
     if (locString)
       this.locationService.locations = JSON.parse(locString);
+    this.weatherService.initStoredConditions(this.locationService.locations);
+    // for (let loc of this.locationService.locations)
+    //   this.weatherService.addCurrentConditions(loc);
     effect(() => {
-      // if user add a valid location then add zipcod in localstorage
+      // if user add a valid location then add zipcode in localstorage
       const locationsCounter: number = this.currentConditionsByZip().length;
-      if (locationsCounter)
-        this.locationService.addLocation(this.currentConditionsByZip()[locationsCounter - 1]?.zip);
+      const zipcode = this.currentConditionsByZip()[locationsCounter - 1]?.zip;
+      const index = this.locationService.locations.indexOf(zipcode);
+      // if user add a zipcode not just included in locationService.locations
+      if (zipcode && index === -1)
+        this.locationService.addLocation(zipcode);
     });
-
-    for (let loc of this.locationService.locations)
-      this.weatherService.addCurrentConditions(loc);
   }
 
   addLocation(zipcode: string): void {

@@ -1,5 +1,5 @@
 import { Injectable, Signal, signal } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
 
 import { HttpClient } from '@angular/common/http';
 import { CurrentConditions } from './current-conditions/current-conditions.type';
@@ -16,12 +16,30 @@ export class WeatherService {
 
   addCurrentConditions(zipcode: string): void {
     const duplicateCondition: boolean = this.currentConditions().some(conditions => conditions.zip === zipcode);
-    if (duplicateCondition)
+    if (this._findCoditionDuplicate(zipcode))
       return;
     // Here we make a request to get the current conditions data from the API. Note the use of backticks and an expression to insert the zipcode
     this.http.get<CurrentConditions>(`${this.appConfig.URL}/weather?zip=${zipcode},us&units=imperial&APPID=${this.appConfig.APPID}`)
       .subscribe(data => this.currentConditions.update(conditions => [...conditions, { zip: zipcode, data }]),
         () => this.removeCurrentConditions(zipcode));
+  }
+
+  initStoredConditions(zipcodes: string[]): void {
+    const restCall$: Array<Observable<CurrentConditions>> = [];
+    zipcodes.forEach(zipcode => restCall$.push(this.http.get<CurrentConditions>(`${this.appConfig.URL}/weather?zip=${zipcode},us&units=imperial&APPID=${this.appConfig.APPID}`)));
+    forkJoin(restCall$).subscribe(
+      (resp: CurrentConditions[]) => {
+        resp.forEach((data, index) => {
+          if (this._findCoditionDuplicate(zipcodes[index]))
+            return;
+          this.currentConditions.update(conditions => [...conditions, { zip: zipcodes[index], data }]);
+        });
+      }
+    );
+  }
+
+  private _findCoditionDuplicate(zipcode: string): boolean {
+    return this.currentConditions().some(conditions => conditions.zip === zipcode);
   }
 
   removeCurrentConditions(zipcode: string) {
