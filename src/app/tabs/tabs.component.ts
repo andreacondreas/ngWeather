@@ -10,6 +10,7 @@ import { TabComponent } from './tab/tab.component';
 export class TabsComponent implements AfterContentInit {
     @ContentChildren(TabComponent) tabs: QueryList<TabComponent>;
     @Output() closedTab = new EventEmitter<number>();
+    @Output() openedTab = new EventEmitter<number>();
 
     // contentChildren are set
     ngAfterContentInit() {
@@ -29,6 +30,7 @@ export class TabsComponent implements AfterContentInit {
         // deactivate all tabs
         localStorage.setItem('activeTabIndex', JSON.stringify(i));
         this.tabs.toArray().forEach(tab => tab.active = false);
+        this.openedTab.emit(i);
         // activate the tab the user has clicked on.
         setTimeout(() => {
             tab.active = true;

@@ -1,13 +1,11 @@
 import { Component, Signal, effect } from '@angular/core';
 import { CacheRequestService } from 'app/cache-request.service';
-import { ConditionsAndZip } from 'app/conditions-and-zip.type';
+import { ConditionsAndZip, ConditionsAndZipAndDate } from 'app/conditions-and-zip.type';
 import { DEFAULT_REQUEST_LIFE } from 'app/constants/default-request-life';
 import { LOCATIONS } from 'app/constants/locations';
 import { MAX_REQUEST_LIFE } from 'app/constants/max-request-life';
-import { CurrentConditions } from 'app/current-conditions/current-conditions.type';
 import { LocationService } from 'app/location.service';
 import { WeatherService } from 'app/weather.service';
-import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-main-page',
@@ -22,8 +20,9 @@ export class MainPageComponent {
     }
     if (locString)
       this.locationService.locations = JSON.parse(locString);
-    const restcalls$: Array<Observable<CurrentConditions>> = this.cacheRequestService.getAllStoredConditionsAndZip(this.locationService.locations);
-    this.weatherService.initStoredConditions(restcalls$, this.locationService.locations);
+    const storedConditions: ConditionsAndZip[] = this.cacheRequestService.getAllStoredConditionsAndZip(this.locationService.locations);
+    if (storedConditions)
+      this.weatherService.initStoredConditions(storedConditions);
     effect(() => {
       // if user add a valid location then add zipcode in localstorage
       const locationsCounter: number = this.currentConditionsByZip().length;
@@ -33,7 +32,6 @@ export class MainPageComponent {
       // if user add a zipcode not just included in locationService.locations
       if (zipcode && index === -1) {
         this.locationService.addLocation(zipcode);
-        this.cacheRequestService.storeConditionsAndZip(zipcode, currentConditionsAndZip);
       }
     });
   }
@@ -47,6 +45,15 @@ export class MainPageComponent {
   removeLocation(zipcode: string): void {
     this.locationService.removeLocation(zipcode);
     this.weatherService.removeCurrentConditions(zipcode);
+  }
+
+  selectCurrentCondition(index: number): void {
+    // la currentCondition è già presente e l'ho selezionata
+    const zipcode: string = this.locationService.locations[index];
+    const selectedCondition: ConditionsAndZipAndDate = this.cacheRequestService.getStoredConditionsAndZipAndDate(zipcode);
+    if (!this.cacheRequestService.checkRequestLife(selectedCondition)) {
+      this.weatherService.refreshCondition(zipcode, index);
+    }
   }
 
 }

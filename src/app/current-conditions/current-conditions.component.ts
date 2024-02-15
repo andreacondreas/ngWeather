@@ -10,6 +10,7 @@ import { ConditionsAndZip } from '../conditions-and-zip.type';
 export class CurrentConditionsComponent {
 
   @Output() zipcode = new EventEmitter<string>();
+  @Output() selectedCurrentCondition = new EventEmitter<number>();
   @Input() conditionsAndZip: ConditionsAndZip[];
   private router = inject(Router);
 
@@ -23,5 +24,9 @@ export class CurrentConditionsComponent {
 
   trackByZip(index: number, item: { zip: string; }) {
     return item.zip;
+  }
+
+  getCondition(i: number): void {
+    this.selectedCurrentCondition.emit(i);
   }
 }

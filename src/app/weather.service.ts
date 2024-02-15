@@ -6,35 +6,43 @@ import { CurrentConditions } from './current-conditions/current-conditions.type'
 import { ConditionsAndZip } from './conditions-and-zip.type';
 import { Forecast } from './forecasts-list/forecast.type';
 import { environment } from 'environments/environment';
+import { CacheRequestService } from './cache-request.service';
 
 @Injectable()
 export class WeatherService {
 
   private currentConditions = signal<ConditionsAndZip[]>([]);
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private cacheRequestService: CacheRequestService) { }
 
   addCurrentConditions(zipcode: string): void {
     if (this._findCoditionDuplicate(zipcode))
       return;
     // Here we make a request to get the current conditions data from the API. Note the use of backticks and an expression to insert the zipcode
     this.http.get<CurrentConditions>(this._getUrl(zipcode))
-      .subscribe(data => this.currentConditions.update(conditions => [...conditions, { zip: zipcode, data }]),
+      .subscribe(data => {
+        this.currentConditions.update(conditions => [...conditions, { zip: zipcode, data }]);
+        this.cacheRequestService.storeConditionsAndZip(zipcode, { zip: zipcode, data });
+      },
         () => this.removeCurrentConditions(zipcode));
   }
 
-  initStoredConditions(restCall$: Array<Observable<CurrentConditions>>, zipcodes: string[]): void {
-    // const restCall$: Array<Observable<CurrentConditions>> = [];
-    // zipcodes.forEach(zipcode => restCall$.push(this.http.get<CurrentConditions>(this._getUrl(zipcode))));
-    forkJoin(restCall$).subscribe(
-      (resp: CurrentConditions[]) => {
-        resp.forEach((data, index) => {
-          if (this._findCoditionDuplicate(zipcodes[index]))
-            return;
-          this.currentConditions.update(conditions => [...conditions, { zip: zipcodes[index], data }]);
-        });
-      }
-    );
+  refreshCondition(zipcode: string, index: number): void {
+    this.http.get<CurrentConditions>(this._getUrl(zipcode))
+      .subscribe(data => {
+        this.currentConditions.update(() => this._updateCondition(index, data, zipcode));
+        this.cacheRequestService.storeConditionsAndZip(zipcode, { data: data, zip: zipcode });
+      });
+  }
+
+  private _updateCondition(index: number, condition: CurrentConditions, zipcode: string): ConditionsAndZip[] {
+    const arr: ConditionsAndZip[] = this.currentConditions();
+    arr[index] = { data: condition, zip: zipcode };
+    return arr;
+  }
+
+  initStoredConditions(storedConditions: ConditionsAndZip[]): void {
+    this.currentConditions.update(condition => storedConditions);
   }
 
   private _getUrl(zipcode: string): string {

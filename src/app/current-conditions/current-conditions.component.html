@@ -1,4 +1,4 @@
-<app-tabs *ngIf="conditionsAndZip.length" (closedTab)="removeLocation(conditionsAndZip[$event]?.zip)">
+<app-tabs *ngIf="conditionsAndZip.length" (closedTab)="removeLocation(conditionsAndZip[$event]?.zip)" (openedTab)="getCondition($event)">
   <ng-container *ngFor="let location of conditionsAndZip; trackBy: trackByZip">
     <app-tab [tabTitle]="location.data.name + '(' + location.zip + ')'">
       <div class="well flex" (click)="showForecast(location.zip)">
