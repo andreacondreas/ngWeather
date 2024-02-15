@@ -15,18 +15,17 @@ export class WeatherService {
   constructor(private http: HttpClient) { }
 
   addCurrentConditions(zipcode: string): void {
-    const duplicateCondition: boolean = this.currentConditions().some(conditions => conditions.zip === zipcode);
     if (this._findCoditionDuplicate(zipcode))
       return;
     // Here we make a request to get the current conditions data from the API. Note the use of backticks and an expression to insert the zipcode
-    this.http.get<CurrentConditions>(`${environment.URL}/weather?zip=${zipcode},us&units=imperial&APPID=${environment.APPID}`)
+    this.http.get<CurrentConditions>(this._getUrl(zipcode))
       .subscribe(data => this.currentConditions.update(conditions => [...conditions, { zip: zipcode, data }]),
         () => this.removeCurrentConditions(zipcode));
   }
 
-  initStoredConditions(zipcodes: string[]): void {
-    const restCall$: Array<Observable<CurrentConditions>> = [];
-    zipcodes.forEach(zipcode => restCall$.push(this.http.get<CurrentConditions>(`${environment.URL}/weather?zip=${zipcode},us&units=imperial&APPID=${environment.APPID}`)));
+  initStoredConditions(restCall$: Array<Observable<CurrentConditions>>, zipcodes: string[]): void {
+    // const restCall$: Array<Observable<CurrentConditions>> = [];
+    // zipcodes.forEach(zipcode => restCall$.push(this.http.get<CurrentConditions>(this._getUrl(zipcode))));
     forkJoin(restCall$).subscribe(
       (resp: CurrentConditions[]) => {
         resp.forEach((data, index) => {
@@ -36,6 +35,10 @@ export class WeatherService {
         });
       }
     );
+  }
+
+  private _getUrl(zipcode: string): string {
+    return `${environment.URL}/weather?zip=${zipcode},us&units=imperial&APPID=${environment.APPID}`;
   }
 
   private _findCoditionDuplicate(zipcode: string): boolean {

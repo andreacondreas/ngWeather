@@ -1,0 +1,1 @@
+export const DEFAULT_REQUEST_LIFE: string = '10000'; // 7200000; //two hours

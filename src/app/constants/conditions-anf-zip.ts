@@ -1,0 +1,1 @@
+export const CONDITIONS_AND_ZIP: string = "conditions-and-zip";

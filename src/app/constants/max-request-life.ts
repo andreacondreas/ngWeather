@@ -1,0 +1,1 @@
+export const MAX_REQUEST_LIFE: string = "maxRequestLife";

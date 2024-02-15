@@ -18,6 +18,7 @@ import { WeatherIconDirective } from './weatherIcon.directive';
 import { OnlyNumbers } from './onlyNumbers.directive';
 import { TabComponent } from './tabs/tab/tab.component';
 import { TabsComponent } from './tabs/tabs.component';
+import { CacheRequestService } from './cache-request.service';
 
 @NgModule({
   declarations: [
@@ -44,6 +45,7 @@ import { TabsComponent } from './tabs/tabs.component';
   providers: [
     LocationService,
     WeatherService,
+    CacheRequestService,
   ],
   bootstrap: [AppComponent]
 })
