@@ -19,6 +19,7 @@ import { OnlyNumbers } from './onlyNumbers.directive';
 import { TabComponent } from './tabs/tab/tab.component';
 import { TabsComponent } from './tabs/tabs.component';
 import { CacheRequestService } from './cache-request.service';
+import { SettingsComponent } from './settings/settings.component';
 
 @NgModule({
   declarations: [
@@ -30,7 +31,8 @@ import { CacheRequestService } from './cache-request.service';
     WeatherIconDirective,
     OnlyNumbers,
     TabsComponent,
-    TabComponent
+    TabComponent,
+    SettingsComponent
   ],
   imports: [
     BrowserModule,

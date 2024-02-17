@@ -1,11 +1,13 @@
 import { Component, OnDestroy } from '@angular/core';
 import { WeatherService } from '../weather.service';
 import { ActivatedRoute } from '@angular/router';
-import { Forecast, ForecastAndDate } from './forecast.type';
+import { Forecast } from './forecast.type';
 import { CacheRequestService } from 'app/cache-request.service';
 import { LocationService } from 'app/location.service';
 import { Subject, timer } from 'rxjs';
 import { take, takeUntil, tap } from 'rxjs/operators';
+import { MAX_REQUEST_LIFE } from 'app/constants/max-request-life';
+import { DEFAULT_REQUEST_LIFE } from 'app/constants/default-request-life';
 
 @Component({
   selector: 'app-forecasts-list',
@@ -17,11 +19,16 @@ export class ForecastsListComponent implements OnDestroy {
   zipcode: string;
   forecast: Forecast;
   stopped$ = new Subject<boolean>();
+  maxRequestLife: number;
 
   constructor(protected weatherService: WeatherService, route: ActivatedRoute, private cacheRequestService: CacheRequestService, private locationService: LocationService) {
+    if (!localStorage.getItem(MAX_REQUEST_LIFE)) {
+      localStorage.setItem(MAX_REQUEST_LIFE, DEFAULT_REQUEST_LIFE);
+    }
+    this.maxRequestLife = +localStorage.getItem(MAX_REQUEST_LIFE);
     route.params.subscribe(params => {
       this.zipcode = params['zipcode'];
-      const storedForecast: ForecastAndDate = this.cacheRequestService.getStoredForecastAndDate(this.zipcode);
+      const storedForecast: Forecast = this.cacheRequestService.getStoredForecast(this.zipcode);
       if (storedForecast) {
         const requestRemainigLife: number = this.cacheRequestService.getRequestRemainigLife(storedForecast);
         this.forecast = storedForecast;
@@ -30,19 +37,20 @@ export class ForecastsListComponent implements OnDestroy {
             take(1)
           )
           .subscribe(() => {
-            this._startTimer();
+            this.startTimer();
           });
         return;
       }
-      this._startTimer();
+      this.startTimer();
     });
   }
 
   ngOnDestroy(): void {
     this.stopped$.next(true);
+    this.stopped$.unsubscribe();
   }
 
-  private _getData(): void {
+  getData(): void {
     this.weatherService.getForecast(this.zipcode)
       .subscribe(data => {
         this.forecast = data;
@@ -50,10 +58,10 @@ export class ForecastsListComponent implements OnDestroy {
       });
   }
 
-  private _startTimer(): void {
-    timer(0, 5000).pipe(
+  startTimer(): void {
+    timer(0, this.maxRequestLife).pipe(
       tap((x) => {
-        this._getData();
+        this.getData();
       }),
       takeUntil(this.stopped$)
     ).subscribe();

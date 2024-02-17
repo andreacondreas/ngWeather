@@ -1,6 +1,6 @@
 import { Component, OnDestroy, Signal, effect } from '@angular/core';
 import { CacheRequestService } from 'app/cache-request.service';
-import { ConditionsAndZip, ConditionsAndZipAndDate } from 'app/conditions-and-zip.type';
+import { ConditionsAndZip } from 'app/conditions-and-zip.type';
 import { DEFAULT_REQUEST_LIFE } from 'app/constants/default-request-life';
 import { LOCATIONS } from 'app/constants/locations';
 import { MAX_REQUEST_LIFE } from 'app/constants/max-request-life';
@@ -15,15 +15,17 @@ import { takeUntil, tap } from 'rxjs/operators';
 })
 export class MainPageComponent implements OnDestroy {
   protected currentConditionsByZip: Signal<ConditionsAndZip[]> = this.weatherService.getCurrentConditions();
+  maxRequestLife: number;
 
   stopped$ = new Subject<boolean>();
 
   constructor(private weatherService: WeatherService, private locationService: LocationService, private cacheRequestService: CacheRequestService) {
-    this.stopped$.next(true);
+
     let locString = localStorage.getItem(LOCATIONS);
     if (!localStorage.getItem(MAX_REQUEST_LIFE)) {
       localStorage.setItem(MAX_REQUEST_LIFE, DEFAULT_REQUEST_LIFE);
     }
+    this.maxRequestLife = +localStorage.getItem(MAX_REQUEST_LIFE);
     if (locString)
       this.locationService.locations = JSON.parse(locString);
     const storedConditions: ConditionsAndZip[] = this.cacheRequestService.getAllStoredConditionsAndZip(this.locationService.locations);
@@ -43,8 +45,7 @@ export class MainPageComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.stopped$.next(true);
-    this.stopped$.unsubscribe();
+    this.stopTimer();
   }
 
   addLocation(zipcode: string): void {
@@ -57,14 +58,16 @@ export class MainPageComponent implements OnDestroy {
     this.cacheRequestService.removeStoredRequest(zipcode);
     this.locationService.removeLocation(zipcode);
     this.weatherService.removeCurrentConditions(zipcode);
-    console.log('closed', zipcode);
+    if (!this.locationService.locations.length) {
+      this.stopTimer();
+    }
   }
 
   selectCurrentCondition(index: number): void {
     this.stopped$.next(true);
     // la currentCondition è già presente e l'ho selezionata
     const zipcode: string = this.locationService.locations[index];
-    const selectedCondition: ConditionsAndZipAndDate = this.cacheRequestService.getStoredConditionsAndZipAndDate(zipcode);
+    const selectedCondition: ConditionsAndZip = this.cacheRequestService.getStoredConditionsAndZip(zipcode);
     const requestRemainigLife: number = this.cacheRequestService.getRequestRemainigLife(selectedCondition);
 
     timer(requestRemainigLife)
@@ -72,14 +75,13 @@ export class MainPageComponent implements OnDestroy {
         takeUntil(this.stopped$)
       )
       .subscribe(() => {
-        console.log(requestRemainigLife);
-        this._startTimer(zipcode, index);
+        this.startTimer(zipcode, index);
       });
   }
 
-  private _startTimer(zipcode: string, tabIndex: number): void {
+  startTimer(zipcode: string, tabIndex: number): void {
     this.stopped$.next(false);
-    timer(0, 5000).pipe(
+    timer(0, this.maxRequestLife).pipe(
       tap((x) => {
         this.weatherService.refreshCondition(zipcode, tabIndex, this.locationService.locations);
       }),
@@ -87,4 +89,8 @@ export class MainPageComponent implements OnDestroy {
     ).subscribe();
   }
 
+  private stopTimer(): void {
+    this.stopped$.next(true);
+    this.stopped$.unsubscribe();
+  }
 }

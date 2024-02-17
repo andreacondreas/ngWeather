@@ -1,4 +1,5 @@
 <div class="well">
+  <a [routerLink]="['/settings']" >Settings</a>
   <form class="ui form" [formGroup]="form">
     <h2>Enter a zipcode:</h2>
     <input type="text" OnlyNumbers #zipcode placeholder="Zipcode" class="form-control" formControlName="zipcode" [maxLength]="5">

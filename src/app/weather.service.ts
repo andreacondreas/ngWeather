@@ -16,10 +16,10 @@ export class WeatherService {
   constructor(private http: HttpClient, private cacheRequestService: CacheRequestService) { }
 
   addCurrentConditions(zipcode: string): void {
-    if (this._findCoditionDuplicate(zipcode))
+    if (this.findCoditionDuplicate(zipcode))
       return;
     // Here we make a request to get the current conditions data from the API. Note the use of backticks and an expression to insert the zipcode
-    this.http.get<CurrentConditions>(this._getUrl(zipcode))
+    this.http.get<CurrentConditions>(this.getUrl(zipcode))
       .subscribe(data => {
         this.currentConditions.update(conditions => [...conditions, { zip: zipcode, data }]);
         this.cacheRequestService.storeConditionsAndZip(zipcode, { zip: zipcode, data });
@@ -28,16 +28,16 @@ export class WeatherService {
   }
 
   refreshCondition(zipcode: string, index: number, locations: string[]): void {
-    this.http.get<CurrentConditions>(this._getUrl(zipcode))
+    this.http.get<CurrentConditions>(this.getUrl(zipcode))
       .subscribe(data => {
         if (locations.indexOf(zipcode) !== -1) {
-          this.currentConditions.update(() => this._updateCondition(index, data, zipcode));
+          this.currentConditions.update(() => this.updateCondition(index, data, zipcode));
           this.cacheRequestService.storeConditionsAndZip(zipcode, { data: data, zip: zipcode });
         }
       });
   }
 
-  private _updateCondition(index: number, condition: CurrentConditions, zipcode: string): ConditionsAndZip[] {
+  updateCondition(index: number, condition: CurrentConditions, zipcode: string): ConditionsAndZip[] {
     const arr: ConditionsAndZip[] = this.currentConditions();
     arr[index] = { data: condition, zip: zipcode };
     return arr;
@@ -47,11 +47,11 @@ export class WeatherService {
     this.currentConditions.update(condition => storedConditions);
   }
 
-  private _getUrl(zipcode: string): string {
+  getUrl(zipcode: string): string {
     return `${environment.URL}/weather?zip=${zipcode},us&units=imperial&APPID=${environment.APPID}`;
   }
 
-  private _findCoditionDuplicate(zipcode: string): boolean {
+  findCoditionDuplicate(zipcode: string): boolean {
     return this.currentConditions().some(conditions => conditions.zip === zipcode);
   }
 

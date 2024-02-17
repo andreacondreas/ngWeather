@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Forecast, ForecastAndDate } from './forecasts-list/forecast.type';
-import { ConditionsAndZip, ConditionsAndZipAndDate } from './conditions-and-zip.type';
+import { Forecast } from './forecasts-list/forecast.type';
+import { ConditionsAndZip } from './conditions-and-zip.type';
 import { FORECAST } from './constants/forecast';
 import { CONDITIONS_AND_ZIP } from './constants/conditions-anf-zip';
 import { MAX_REQUEST_LIFE } from './constants/max-request-life';
@@ -22,39 +22,15 @@ export class CacheRequestService {
         localStorage.setItem(key, JSON.stringify({ ...value, storedDate: new Date().getTime() }));
     }
 
-    getStoredForecast(zipcode): ForecastAndDate {
-        const key: string = zipcode + '-' + FORECAST;
-        const storedForecast: ForecastAndDate = JSON.parse(localStorage.getItem(key));
-        debugger;
-        if (!this.checkRequestLife(storedForecast))
-            return null;
-        if (storedForecast) {
-            delete storedForecast['storedDate'];
-        }
-        return storedForecast;
-    }
-
-
     getStoredConditionsAndZip(zipcode): ConditionsAndZip {
         const key: string = zipcode + '-' + CONDITIONS_AND_ZIP;
-        let storedCondition: ConditionsAndZipAndDate = JSON.parse(localStorage.getItem(key));
-        if (!this.checkRequestLife(storedCondition)) {
-            return null;
-        } else {
-            delete storedCondition['storedDate'];
-        }
+        let storedCondition: ConditionsAndZip = JSON.parse(localStorage.getItem(key));
         return storedCondition;
     }
 
-    getStoredConditionsAndZipAndDate(zipcode): ConditionsAndZipAndDate {
-        const key: string = zipcode + '-' + CONDITIONS_AND_ZIP;
-        let storedCondition: ConditionsAndZipAndDate = JSON.parse(localStorage.getItem(key));
-        return storedCondition;
-    }
-
-    getStoredForecastAndDate(zipcode): ForecastAndDate {
+    getStoredForecast(zipcode): Forecast {
         const key: string = zipcode + '-' + FORECAST;
-        let storedCondition: ForecastAndDate = JSON.parse(localStorage.getItem(key));
+        let storedCondition: Forecast = JSON.parse(localStorage.getItem(key));
         return storedCondition;
     }
 
@@ -62,22 +38,13 @@ export class CacheRequestService {
         const storedConditions: ConditionsAndZip[] = [];
         zipcodes.forEach(zipcode => {
             //search zipcode in stored ConditionsAndZip in localStorage
-            const condition: ConditionsAndZipAndDate = this.getStoredConditionsAndZipAndDate(zipcode);
-            delete condition['storedDate'];
+            const condition: ConditionsAndZip = this.getStoredConditionsAndZip(zipcode);
             storedConditions.push(condition);
         });
         return storedConditions;
     }
 
-    checkRequestLife(storedRequest: ConditionsAndZipAndDate | ForecastAndDate): boolean {
-        if (!storedRequest)
-            return;
-        const requestAge: number = storedRequest.storedDate + parseInt(localStorage.getItem(MAX_REQUEST_LIFE));
-        const now: number = new Date().getTime();
-        return requestAge > now;
-    }
-
-    getRequestRemainigLife(storedRequest: ConditionsAndZipAndDate | ForecastAndDate): number {
+    getRequestRemainigLife(storedRequest: ConditionsAndZip | Forecast): number {
         const maxLife: number = +localStorage.getItem(MAX_REQUEST_LIFE);
         const storedData: number = storedRequest.storedDate;
         const now: number = new Date().getTime();

@@ -1,0 +1,10 @@
+<div class="well">
+  <form class="ui form" [formGroup]="form">
+    <h2>Enter an interval for request in milliseconds (almost 3000):</h2>
+    <input type="number" #requestLife placeholder="enter interval for request" class="form-control" formControlName="ms">
+    <br>
+    <button class="btn btn-primary" (click)="updateValue(requestLife.value)" [disabled]="form.invalid">
+      Add location
+    </button>
+  </form>
+</div>

@@ -4,6 +4,7 @@ export interface Forecast {
     message: number;
     cnt: number;
     list: List[];
+    storedDate?: number;
 }
 
 export interface City {
@@ -58,8 +59,4 @@ export interface Weather {
     main: string;
     description: string;
     icon: string;
-}
-
-export interface ForecastAndDate extends Forecast {
-    storedDate: number;
 }
