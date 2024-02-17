@@ -1,5 +1,5 @@
 import { Injectable, Signal, signal } from '@angular/core';
-import { Observable, forkJoin } from 'rxjs';
+import { Observable } from 'rxjs';
 
 import { HttpClient } from '@angular/common/http';
 import { CurrentConditions } from './current-conditions/current-conditions.type';
@@ -27,11 +27,13 @@ export class WeatherService {
         () => this.removeCurrentConditions(zipcode));
   }
 
-  refreshCondition(zipcode: string, index: number): void {
+  refreshCondition(zipcode: string, index: number, locations: string[]): void {
     this.http.get<CurrentConditions>(this._getUrl(zipcode))
       .subscribe(data => {
-        this.currentConditions.update(() => this._updateCondition(index, data, zipcode));
-        this.cacheRequestService.storeConditionsAndZip(zipcode, { data: data, zip: zipcode });
+        if (locations.indexOf(zipcode) !== -1) {
+          this.currentConditions.update(() => this._updateCondition(index, data, zipcode));
+          this.cacheRequestService.storeConditionsAndZip(zipcode, { data: data, zip: zipcode });
+        }
       });
   }
 

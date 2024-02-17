@@ -1,13 +1,10 @@
 import { Injectable } from '@angular/core';
-import { Forecast } from './forecasts-list/forecast.type';
+import { Forecast, ForecastAndDate } from './forecasts-list/forecast.type';
 import { ConditionsAndZip, ConditionsAndZipAndDate } from './conditions-and-zip.type';
 import { FORECAST } from './constants/forecast';
 import { CONDITIONS_AND_ZIP } from './constants/conditions-anf-zip';
 import { MAX_REQUEST_LIFE } from './constants/max-request-life';
 
-interface ForecastAndDate extends Forecast {
-    storedDate: number;
-}
 @Injectable()
 export class CacheRequestService {
 
@@ -25,9 +22,10 @@ export class CacheRequestService {
         localStorage.setItem(key, JSON.stringify({ ...value, storedDate: new Date().getTime() }));
     }
 
-    getStoredForecast(zipcode): Forecast {
+    getStoredForecast(zipcode): ForecastAndDate {
         const key: string = zipcode + '-' + FORECAST;
         const storedForecast: ForecastAndDate = JSON.parse(localStorage.getItem(key));
+        debugger;
         if (!this.checkRequestLife(storedForecast))
             return null;
         if (storedForecast) {
@@ -54,6 +52,12 @@ export class CacheRequestService {
         return storedCondition;
     }
 
+    getStoredForecastAndDate(zipcode): ForecastAndDate {
+        const key: string = zipcode + '-' + FORECAST;
+        let storedCondition: ForecastAndDate = JSON.parse(localStorage.getItem(key));
+        return storedCondition;
+    }
+
     getAllStoredConditionsAndZip(zipcodes: string[]): ConditionsAndZip[] {
         const storedConditions: ConditionsAndZip[] = [];
         zipcodes.forEach(zipcode => {
@@ -73,7 +77,16 @@ export class CacheRequestService {
         return requestAge > now;
     }
 
+    getRequestRemainigLife(storedRequest: ConditionsAndZipAndDate | ForecastAndDate): number {
+        const maxLife: number = +localStorage.getItem(MAX_REQUEST_LIFE);
+        const storedData: number = storedRequest.storedDate;
+        const now: number = new Date().getTime();
+        const storeDataLife: number = now - storedData;
+        return maxLife - storeDataLife > 0 ? maxLife - storeDataLife : 0;
+    }
+
     removeStoredRequest(key: string) {
-        localStorage.removeItem(key);
+        localStorage.removeItem(key + '-' + CONDITIONS_AND_ZIP);
+        localStorage.removeItem(key + '-' + FORECAST);
     }
 }
