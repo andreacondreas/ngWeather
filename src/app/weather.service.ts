@@ -23,8 +23,7 @@ export class WeatherService {
       .subscribe(data => {
         this.currentConditions.update(conditions => [...conditions, { zip: zipcode, data }]);
         this.cacheRequestService.storeConditionsAndZip(zipcode, { zip: zipcode, data });
-      },
-        () => this.removeCurrentConditions(zipcode));
+      });
   }
 
   refreshCondition(zipcode: string, index: number, locations: string[]): void {

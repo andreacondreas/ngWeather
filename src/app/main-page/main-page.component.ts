@@ -22,23 +22,27 @@ export class MainPageComponent implements OnDestroy {
   constructor(private weatherService: WeatherService, private locationService: LocationService, private cacheRequestService: CacheRequestService) {
 
     let locString = localStorage.getItem(LOCATIONS);
+    // set default request life
     if (!localStorage.getItem(MAX_REQUEST_LIFE)) {
       localStorage.setItem(MAX_REQUEST_LIFE, DEFAULT_REQUEST_LIFE);
     }
+    //get request life
     this.maxRequestLife = +localStorage.getItem(MAX_REQUEST_LIFE);
+    //get stored locations
     if (locString)
       this.locationService.locations = JSON.parse(locString);
+    //get all stored requests
     const storedConditions: ConditionsAndZip[] = this.cacheRequestService.getAllStoredConditionsAndZip(this.locationService.locations);
     if (storedConditions)
       this.weatherService.initStoredConditions(storedConditions);
     effect(() => {
-      // if user add a valid location then add zipcode in localstorage
+      // if user add a new valid location then add zipcode in localstorage
       const locationsCounter: number = this.currentConditionsByZip().length;
       const currentConditionsAndZip: ConditionsAndZip = this.currentConditionsByZip()[locationsCounter - 1];
       const zipcode = currentConditionsAndZip?.zip;
       const index = this.locationService.locations.indexOf(zipcode);
-      // if user add a zipcode not just included in locationService.locations
       if (zipcode && index === -1) {
+        // if is new zipcode then update stored locations
         this.locationService.addLocation(zipcode);
       }
     });
@@ -49,7 +53,9 @@ export class MainPageComponent implements OnDestroy {
   }
 
   addLocation(zipcode: string): void {
+    // get entered zip location from zipcode-entry
     let index = this.locationService.locations.indexOf(zipcode);
+    // if is new zip location update current conditions
     if (index === -1)
       this.weatherService.addCurrentConditions(zipcode);
   }
@@ -59,17 +65,21 @@ export class MainPageComponent implements OnDestroy {
     this.locationService.removeLocation(zipcode);
     this.weatherService.removeCurrentConditions(zipcode);
     if (!this.locationService.locations.length) {
-      this.stopTimer();
+      // stop timer if there is'nt any stored location
+      this.stopped$.next(true);
     }
   }
 
   selectCurrentCondition(index: number): void {
+    // on change tab stop timer
     this.stopped$.next(true);
-    // la currentCondition è già presente e l'ho selezionata
+    // lget selecetd zipcode
     const zipcode: string = this.locationService.locations[index];
+    // get selected condition
     const selectedCondition: ConditionsAndZip = this.cacheRequestService.getStoredConditionsAndZip(zipcode);
+    // get remain life of selected request
     const requestRemainigLife: number = this.cacheRequestService.getRequestRemainigLife(selectedCondition);
-
+    // start timer when request life finish
     timer(requestRemainigLife)
       .pipe(
         takeUntil(this.stopped$)
@@ -90,7 +100,9 @@ export class MainPageComponent implements OnDestroy {
   }
 
   private stopTimer(): void {
-    this.stopped$.next(true);
-    this.stopped$.unsubscribe();
+    setTimeout(() => {
+      this.stopped$.next(true);
+      this.stopped$.unsubscribe();
+    });
   }
 }
